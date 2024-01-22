@@ -129,11 +129,11 @@ def __get_descriptors_and_key_points(
     :rtype: (numpy.ndarray, numpy.ndarray)
     """
     # Create the ORB object
-    orb = cv.ORB_create(nfeatures=2000)
+    detector = cv.ORB_create(nfeatures=2000)
 
     # Get the descriptors and key points of the images
-    key_point_left, descriptors_left = orb.detectAndCompute(image_left, None)
-    key_point_right, descriptors_right = orb.detectAndCompute(image_right, None)
+    key_point_left, descriptors_left = detector.detectAndCompute(image_left, None)
+    key_point_right, descriptors_right = detector.detectAndCompute(image_right, None)
 
 
     print("Descriptors Left: ", descriptors_left.shape)
@@ -218,7 +218,8 @@ def __get_homography_matrix(
     points_right = np.float32([key_points_right[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
 
     # Get the homography matrix
-    homography_matrix, _ = cv.findHomography(points_left, points_right, cv.RANSAC, 5.0)
+    homography_matrix, _ = cv.findHomography(points_left, points_right)
+    # homography_matrix, _ = cv.findHomography(points_left, points_right, cv.RANSAC, 5.0)
     return homography_matrix
 
 
@@ -264,8 +265,33 @@ def __warp_images(
     translation_matrix = np.array([[1, 0, -min_x], [0, 1, -min_y], [0, 0, 1]])
 
     # Warp the images
-    result = cv.warpPerspective(image2, translation_matrix.dot(homography_matrix), (image1.shape[1] + image2.shape[2], image1.shape[0]))
-    # result[-min_y:rows1 - min_y, -min_x:cols1 - min_x] = image1
-    result[0:rows1, 0:cols1] = image1
+    # result = cv.warpPerspective(image2, translation_matrix.dot(homography_matrix), (image1.shape[1] + image2.shape[2], image1.shape[0]))
+    result = cv.warpPerspective(image2, translation_matrix.dot(homography_matrix), (max_x - min_x, max_y - min_y))
+    result[-min_y:rows1 - min_y, -min_x:cols1 - min_x] = image1
+    # result[0:rows1, 0:cols1] = image1
 
     return result
+
+# def __warp_images(
+#         image1: np.ndarray,
+#         image2: np.ndarray,
+#         homography_matrix: np.ndarray,
+#         ) -> np.ndarray:
+#     """
+#     This function is used to warp the images.
+    
+#     Parameters:
+#     -----------
+#     :type image1: numpy.ndarray
+#     :type image2: numpy.ndarray
+#     :type homography_matrix: numpy.ndarray
+    
+#     Returns:
+#     --------
+#     :rtype: numpy.ndarray
+#     """
+
+#     result = cv.warpPerspective(image1, homography_matrix, (image1.shape[1] + image2.shape[1], image1.shape[0]))
+#     result[0:image2.shape[0], 0:image2.shape[1]] = image2
+
+#     return result
