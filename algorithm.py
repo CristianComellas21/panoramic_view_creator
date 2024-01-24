@@ -52,7 +52,7 @@ def create_panoramic_view(
     
 
     assert len(images) > 1, "At least two images are required to create a panoramic view."
-    
+
     left_image = images[0]
     for idx in range(len(images)-1):
         right_image = images[idx+1]
@@ -99,18 +99,25 @@ def __create_panoramic_view(
     descriptors, key_points = __get_descriptors_and_key_points(image_left, image_right)
 
     # Get the matches between consecutive images
-    matches = __get_matches(descriptors[0], descriptors[1])
+    matches = __get_matches(descriptors[1], descriptors[0])
 
     # Get the good matches
     good_matches = __filter_matches(matches, match_threshold)
 
     # Get the homography matrix for each pair of consecutive images
-    homography_matrix = __get_homography_matrix(good_matches, key_points[0], key_points[1])
+    homography_matrix = __get_homography_matrix(good_matches, key_points[1], key_points[0])
 
     # Warp the images
     result = __warp_images(image_right, image_left, homography_matrix)
 
-    return result
+    return {
+        "final_result": result,
+        "descriptors": descriptors,
+        "key_points": key_points,
+        "matches": matches,
+        "good_matches": good_matches,
+        "homography_matrix": homography_matrix
+    }
 
 
 def __get_descriptors_and_key_points(
@@ -121,7 +128,7 @@ def __get_descriptors_and_key_points(
     This function is used to get the descriptors and key points of the images.
 
     Parameters:
-    -----------
+    ----------
     :type images: list
 
     Returns:
@@ -223,55 +230,6 @@ def __get_homography_matrix(
     return homography_matrix
 
 
-def __warp_images(
-        image1: np.ndarray,
-        image2: np.ndarray,
-        homography_matrix: np.ndarray,
-        ) -> np.ndarray:
-    """
-    This function is used to warp the images.
-    
-    Parameters:
-    -----------
-    :type image1: numpy.ndarray
-    :type image2: numpy.ndarray
-    :type homography_matrix: numpy.ndarray
-    
-    Returns:
-    --------
-    :rtype: numpy.ndarray
-    """
-
-    rows1, cols1 = image1.shape[:2]
-    rows2, cols2 = image2.shape[:2]
-
-    # Get the corners of the left image
-    corners1 = np.float32([[0, 0], [0, rows1], [cols1, rows1], [cols1, 0]]).reshape(-1, 1, 2)
-
-    # Get the corners of the right image
-    corners2_tmp = np.float32([[0, 0], [0, rows2], [cols2, rows2], [cols2, 0]]).reshape(-1, 1, 2)
-
-    # Get the corners of the right image in the left image
-    corners2 = cv.perspectiveTransform(corners2_tmp, homography_matrix)
-
-    # Get the bounding box
-    bounding_box = np.concatenate((corners1, corners2), axis=0)
-
-    # Get the minimum and maximum x and y coordinates
-    [min_x, min_y] = np.int32(bounding_box.min(axis=0).ravel() - 0.5)
-    [max_x, max_y] = np.int32(bounding_box.max(axis=0).ravel() + 0.5)
-
-    # Get the translation matrix
-    translation_matrix = np.array([[1, 0, -min_x], [0, 1, -min_y], [0, 0, 1]])
-
-    # Warp the images
-    # result = cv.warpPerspective(image2, translation_matrix.dot(homography_matrix), (image1.shape[1] + image2.shape[2], image1.shape[0]))
-    result = cv.warpPerspective(image2, translation_matrix.dot(homography_matrix), (max_x - min_x, max_y - min_y))
-    result[-min_y:rows1 - min_y, -min_x:cols1 - min_x] = image1
-    # result[0:rows1, 0:cols1] = image1
-
-    return result
-
 # def __warp_images(
 #         image1: np.ndarray,
 #         image2: np.ndarray,
@@ -291,7 +249,56 @@ def __warp_images(
 #     :rtype: numpy.ndarray
 #     """
 
-#     result = cv.warpPerspective(image1, homography_matrix, (image1.shape[1] + image2.shape[1], image1.shape[0]))
-#     result[0:image2.shape[0], 0:image2.shape[1]] = image2
+#     rows1, cols1 = image1.shape[:2]
+#     rows2, cols2 = image2.shape[:2]
+
+#     # Get the corners of the left image
+#     corners1 = np.float32([[0, 0], [0, rows1], [cols1, rows1], [cols1, 0]]).reshape(-1, 1, 2)
+
+#     # Get the corners of the right image
+#     corners2_tmp = np.float32([[0, 0], [0, rows2], [cols2, rows2], [cols2, 0]]).reshape(-1, 1, 2)
+
+#     # Get the corners of the right image in the left image
+#     corners2 = cv.perspectiveTransform(corners2_tmp, homography_matrix)
+
+#     # Get the bounding box
+#     bounding_box = np.concatenate((corners1, corners2), axis=0)
+
+#     # Get the minimum and maximum x and y coordinates
+#     [min_x, min_y] = np.int32(bounding_box.min(axis=0).ravel() - 0.5)
+#     [max_x, max_y] = np.int32(bounding_box.max(axis=0).ravel() + 0.5)
+
+#     # Get the translation matrix
+#     translation_matrix = np.array([[1, 0, -min_x], [0, 1, -min_y], [0, 0, 1]])
+
+#     # Warp the images
+#     # result = cv.warpPerspective(image2, translation_matrix.dot(homography_matrix), (image1.shape[1] + image2.shape[2], image1.shape[0]))
+#     result = cv.warpPerspective(image2, translation_matrix.dot(homography_matrix), (max_x - min_x, max_y - min_y))
+#     result[-min_y:rows1 - min_y, -min_x:cols1 - min_x] = image1
+#     # result[0:rows1, 0:cols1] = image1
 
 #     return result
+
+def __warp_images(
+        image1: np.ndarray,
+        image2: np.ndarray,
+        homography_matrix: np.ndarray,
+        ) -> np.ndarray:
+    """
+    This function is used to warp the images.
+    
+    Parameters:
+    -----------
+    :type image1: numpy.ndarray
+    :type image2: numpy.ndarray
+    :type homography_matrix: numpy.ndarray
+    
+    Returns:
+    --------
+    :rtype: numpy.ndarray
+    """
+
+    result = cv.warpPerspective(image1, homography_matrix, (image1.shape[1] + image2.shape[1], image1.shape[0]))
+    result[0:image2.shape[0], 0:image2.shape[1]] = image2
+
+    return result
