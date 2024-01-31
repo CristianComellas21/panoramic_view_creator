@@ -16,18 +16,22 @@ def main():
     # Define the argument parser
     arg_parser = ArgumentParser()
 
-    # Add named arguments
+    # --- Add named arguments
     arg_parser.add_argument("-o", "--output", default="panoramic_result.png", help="Path to the output directory.")
 
     arg_parser.add_argument("-t", "--threshold", default=0.6, type=float, help="Threshold for the ratio test.")
+    
+    arg_parser.add_argument("-m", "--method", choices=["SIFT", "ORB"], default="SIFT", help="Method for feature detection.")
 
-    # Add action arguments
+    # --- Add action arguments
     arg_parser.add_argument("-v", "--verbose", action="store_true", help="Print verbose output.")
     
     arg_parser.add_argument("-c", "--crop", action="store_true", help="Crop the result image.")
 
-    # Add positional arguments (image paths)
+    # --- Add positional arguments (image paths)
     arg_parser.add_argument("-i", "--image_paths", nargs="+", type=str, help="Path to the 3 images to be stitched in order left-to-right.")
+
+
 
     # Parse the arguments
     args = arg_parser.parse_args()
@@ -37,6 +41,7 @@ def main():
     match_threshold = args.threshold
     image_paths = args.image_paths
     crop = args.crop
+    method = args.method
     verbose = args.verbose
 
     # ------------------------
@@ -51,6 +56,7 @@ def main():
         images=images, 
         match_threshold=match_threshold,
         crop=crop,
+        detector=method,
         verbose=verbose)
 
     # Save the result
