@@ -8,10 +8,17 @@ MIN_RATIO = 0.4
 MAX_DESCRIPTORS = 15000
 BASE_DESCRIPTION = "Panoramic view creation"
 
+DETECTOR_OPTIONS = {
+    "SIFT": cv.SIFT_create,
+    "ORB": cv.ORB_create
+}
+
+
 def create_panoramic_view(
         images: [np.ndarray],
         match_threshold: float = 0.6,
         crop: bool = False,
+        detector: str = "SIFT",
         verbose: bool = True
         ) -> np.ndarray:
     """
@@ -26,7 +33,11 @@ def create_panoramic_view(
     :rtype: numpy.ndarray
     """
 
+    # Assertions
     assert len(images) == 3, "The number of images must be 3."
+    assert detector in DETECTOR_OPTIONS.keys(), f"Detector must be one of {DETECTOR_OPTIONS.keys()}."
+    assert match_threshold > MIN_RATIO and match_threshold <= 1, "Match threshold must be between 0 and 1."
+    
 
 
     # Create progress indicator
@@ -61,7 +72,7 @@ def create_panoramic_view(
         key_points_new_middle,
         key_points_middle,
         key_points_right
-     ) =  __get_descriptors_and_key_points([new_left_image_gray, new_middle_image_gray, middle_image_gray, right_image_gray])
+     ) =  __get_descriptors_and_key_points([new_left_image_gray, new_middle_image_gray, middle_image_gray, right_image_gray], detector=detector)
     
         
     __update_progress(progress_indicator, "Getting matches...")
@@ -106,9 +117,12 @@ def create_panoramic_view(
 
     ### === CROP THE IMAGES === ###
 
-    __update_progress(progress_indicator, "Cropping images...")
 
     if crop:
+        
+        __update_progress(progress_indicator, "Cropping images...")
+        
+        
         result_left_middle, result_right_middle = __crop_images(
             result_left_middle=result_left_middle,
             result_right_middle=result_right_middle,
@@ -157,6 +171,7 @@ def create_panoramic_view(
 
 def __get_descriptors_and_key_points(
     images: [np.ndarray],
+    detector: str 
 ) -> (np.ndarray, np.ndarray):
     """
     This function is used to get the descriptors and key points of the images.
@@ -170,7 +185,7 @@ def __get_descriptors_and_key_points(
     :rtype: (numpy.ndarray, numpy.ndarray)
     """
     # Create the descritor detector object (SIFT in this case)
-    detector = cv.SIFT_create(MAX_DESCRIPTORS)
+    detector = DETECTOR_OPTIONS.get(detector)(MAX_DESCRIPTORS)
 
     # Get the descriptors and key points of the images
     descriptors_list = []
