@@ -108,108 +108,16 @@ def create_panoramic_view(
 
     __update_progress(progress_indicator, "Cropping images...")
 
-    # Get corners of the new_middle image into the new image
-    corners_new_middle_tmp = np.float32([[0, 0], [0, new_middle_image.shape[0]], [new_middle_image.shape[1], new_middle_image.shape[0]], [new_middle_image.shape[1], 0]]).reshape(-1, 1, 2)
-    corners_new_middle = cv.perspectiveTransform(corners_new_middle_tmp, homography_matrix_left_middle)
-
-
-    # --- CROP HORITZONTALLY LEFT MIDDLE
-
-    # Get x corners and take the second rightmost one
-    x_values = corners_new_middle[:, :, 0].squeeze()
-    x_values = np.sort(x_values)
-    right_limit_new_middle = int(x_values[2])
-
-
-
-    # Get corners of the right image into the new image
-    corners_right_tmp = np.float32([[0, 0], [0, right_image.shape[0]], [right_image.shape[1], right_image.shape[0]], [right_image.shape[1], 0]]).reshape(-1, 1, 2)
-    corners_right = cv.perspectiveTransform(corners_right_tmp, homography_matrix_middle_right)
-
-    # --- CROP HORIZONTALLY RIGHT MIDDLE
-
-    # Get x corners and take the second rightmost one
-    x_values = corners_right[:, :, 0].squeeze()
-    x_values = np.sort(x_values)
-    right_limit_right = int(x_values[2])
-
-
-    # --- CROP VERTICALLY BOTH IMAGES
-
-    # Get the points of the right limit of the most left image
-    right_limit_points = np.array([
-        [new_left_image.shape[1], 0],
-        [new_left_image.shape[1], new_left_image.shape[0]]
-    ])
-
-    # Get the equation of the line that goes through the right limit points
-    right_limit_line_equation = line(right_limit_points[0], right_limit_points[1])
-
-    # - BOTTOM CROP
-
-    # Select the interesting points
-    bottom_left_new_middle = corners_new_middle[1][0]
-    bottom_right_new_middle = corners_new_middle[2][0]
-    bottom_left_right = corners_right[1][0]
-    bottom_right_right = corners_right[2][0]
-
-
-    # Create the line equations
-    line_equation_new_middle = line(bottom_left_new_middle, bottom_right_new_middle)
-    line_equation_right = line(bottom_left_right, bottom_right_right)
-
-    # Create the list of candidates, which are the most right ones and 
-    # the intersection points of the bottom line on the right image
-    # and the vertical right line of the left image
-    bottom_candidates = [
-        bottom_right_right,
-        bottom_right_new_middle,
-        intersection(line_equation_new_middle, right_limit_line_equation),
-        intersection(line_equation_right, right_limit_line_equation)
-    ]
-
-    # Now we want to obtain the point with the lowest value of y
-    bottom_candidates = np.array(bottom_candidates)
-    y_values = bottom_candidates[:, 1]
-    y_values = np.clip(y_values, 0, result_left_middle.shape[0])
-    bottom_limit = np.min(y_values)
-
-    # - TOP CROP
-
-    # Select the interesting points
-    top_left_new_middle = corners_new_middle[0][0]
-    top_right_new_middle = corners_new_middle[3][0]
-    top_left_right = corners_right[0][0]
-    top_right_right = corners_right[3][0]
-
-
-    # Create the line equations
-    line_equation_new_middle = line(top_left_new_middle, top_right_new_middle)
-    line_equation_right = line(top_left_right, top_right_right)
-
-    # Create the list of candidates, which are the most right ones and
-    # the intersection points of the top line on the right image
-    # and the vertical right line of the left image
-
-    top_candidates = [
-        top_right_right,
-        top_right_new_middle,
-        intersection(line_equation_new_middle, right_limit_line_equation),
-        intersection(line_equation_right, right_limit_line_equation)
-    ]
-
-
-    # Now we want to obtain the point with the highest value of y
-    top_candidates = np.array(top_candidates)
-    y_values = top_candidates[:, 1]
-    y_values = np.clip(y_values, 0, np.inf)
-    top_limit = np.max(y_values)
-
-    # - CROP
-
-    # Crop the images
-    result_left_middle = result_left_middle[int(top_limit):int(bottom_limit), 0:right_limit_new_middle]
-    result_right_middle = result_right_middle[int(top_limit):int(bottom_limit), 0:right_limit_right]
+    if crop:
+        result_left_middle, result_right_middle = __crop_images(
+            result_left_middle=result_left_middle,
+            result_right_middle=result_right_middle,
+            right_image=right_image,
+            new_middle_image=new_middle_image,
+            new_left_image=new_left_image,
+            homography_matrix_left_middle=homography_matrix_left_middle,
+            homography_matrix_middle_right=homography_matrix_middle_right
+        )
 
 
     ### === JOIN THE IMAGES === ###
@@ -240,7 +148,12 @@ def create_panoramic_view(
 
     return result_left_middle, result_right_middle, final_image
     
+    
+    
+
 ### ============== PRIVATE FUNCTIONS ============== ###
+
+### --- IMAGE PROCESSING --- ###
 
 def __get_descriptors_and_key_points(
     images: [np.ndarray],
@@ -352,6 +265,135 @@ def __get_homography_matrix(
 
     return homography_matrix
 
+
+def __crop_images(*, result_left_middle, result_right_middle, right_image, new_middle_image, new_left_image, homography_matrix_left_middle, homography_matrix_middle_right):
+    """
+    Crop the images to remove the black parts.
+    
+    Parameters:
+    -----------
+    :type result_left_middle: numpy.ndarray
+    :type result_right_middle: numpy.ndarray
+    :type right_image: numpy.ndarray
+    :type new_middle_image: numpy.ndarray
+    :type new_left_image: numpy.ndarray
+    :type homography_matrix_left_middle: numpy.ndarray
+    :type homography_matrix_middle_right: numpy.ndarray
+    
+    Returns:
+    --------
+    :rtype: (numpy.ndarray, numpy.ndarray)
+    
+    
+    """
+    
+    # Get corners of the new_middle image into the new image
+    corners_new_middle_tmp = np.float32([[0, 0], [0, new_middle_image.shape[0]], [new_middle_image.shape[1], new_middle_image.shape[0]], [new_middle_image.shape[1], 0]]).reshape(-1, 1, 2)
+    corners_new_middle = cv.perspectiveTransform(corners_new_middle_tmp, homography_matrix_left_middle)
+
+
+    # --- CROP HORITZONTALLY LEFT MIDDLE
+
+    # Get x corners and take the second rightmost one
+    x_values = corners_new_middle[:, :, 0].squeeze()
+    x_values = np.sort(x_values)
+    right_limit_new_middle = int(x_values[2])
+
+
+
+    # Get corners of the right image into the new image
+    corners_right_tmp = np.float32([[0, 0], [0, right_image.shape[0]], [right_image.shape[1], right_image.shape[0]], [right_image.shape[1], 0]]).reshape(-1, 1, 2)
+    corners_right = cv.perspectiveTransform(corners_right_tmp, homography_matrix_middle_right)
+
+    # --- CROP HORIZONTALLY RIGHT MIDDLE
+
+    # Get x corners and take the second rightmost one
+    x_values = corners_right[:, :, 0].squeeze()
+    x_values = np.sort(x_values)
+    right_limit_right = int(x_values[2])
+
+
+    # --- CROP VERTICALLY BOTH IMAGES
+
+    # Get the points of the right limit of the most left image
+    right_limit_points = np.array([
+        [new_left_image.shape[1], 0],
+        [new_left_image.shape[1], new_left_image.shape[0]]
+    ])
+
+    # Get the equation of the line that goes through the right limit points
+    right_limit_line_equation = line(right_limit_points[0], right_limit_points[1])
+
+    # - BOTTOM CROP
+
+    # Select the interesting points
+    bottom_left_new_middle = corners_new_middle[1][0]
+    bottom_right_new_middle = corners_new_middle[2][0]
+    bottom_left_right = corners_right[1][0]
+    bottom_right_right = corners_right[2][0]
+
+
+    # Create the line equations
+    line_equation_new_middle = line(bottom_left_new_middle, bottom_right_new_middle)
+    line_equation_right = line(bottom_left_right, bottom_right_right)
+
+    # Create the list of candidates, which are the most right ones and 
+    # the intersection points of the bottom line on the right image
+    # and the vertical right line of the left image
+    bottom_candidates = [
+        bottom_right_right,
+        bottom_right_new_middle,
+        intersection(line_equation_new_middle, right_limit_line_equation),
+        intersection(line_equation_right, right_limit_line_equation)
+    ]
+
+    # Now we want to obtain the point with the lowest value of y
+    bottom_candidates = np.array(bottom_candidates)
+    y_values = bottom_candidates[:, 1]
+    y_values = np.clip(y_values, 0, result_left_middle.shape[0])
+    bottom_limit = np.min(y_values)
+
+    # - TOP CROP
+
+    # Select the interesting points
+    top_left_new_middle = corners_new_middle[0][0]
+    top_right_new_middle = corners_new_middle[3][0]
+    top_left_right = corners_right[0][0]
+    top_right_right = corners_right[3][0]
+
+
+    # Create the line equations
+    line_equation_new_middle = line(top_left_new_middle, top_right_new_middle)
+    line_equation_right = line(top_left_right, top_right_right)
+
+    # Create the list of candidates, which are the most right ones and
+    # the intersection points of the top line on the right image
+    # and the vertical right line of the left image
+
+    top_candidates = [
+        top_right_right,
+        top_right_new_middle,
+        intersection(line_equation_new_middle, right_limit_line_equation),
+        intersection(line_equation_right, right_limit_line_equation)
+    ]
+
+
+    # Now we want to obtain the point with the highest value of y
+    top_candidates = np.array(top_candidates)
+    y_values = top_candidates[:, 1]
+    y_values = np.clip(y_values, 0, np.inf)
+    top_limit = np.max(y_values)
+
+    # - CROP
+
+    # Crop the images
+    result_left_middle = result_left_middle[int(top_limit):int(bottom_limit), 0:right_limit_new_middle]
+    result_right_middle = result_right_middle[int(top_limit):int(bottom_limit), 0:right_limit_right]
+
+    return result_left_middle, result_right_middle
+
+
+### --- PROGRESS INDICATOR --- ###
 
 def __update_progress(progress_indicator: tqdm, mssg: str):
     """
