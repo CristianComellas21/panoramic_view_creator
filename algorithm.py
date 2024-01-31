@@ -143,7 +143,7 @@ def create_panoramic_view(
     ])
 
     # Get the equation of the line that goes through the right limit points
-    right_limit_line_equation = __line(right_limit_points[0], right_limit_points[1])
+    right_limit_line_equation = line(right_limit_points[0], right_limit_points[1])
 
     # - BOTTOM CROP
 
@@ -155,8 +155,8 @@ def create_panoramic_view(
 
 
     # Create the line equations
-    line_equation_new_middle = __line(bottom_left_new_middle, bottom_right_new_middle)
-    line_equation_right = __line(bottom_left_right, bottom_right_right)
+    line_equation_new_middle = line(bottom_left_new_middle, bottom_right_new_middle)
+    line_equation_right = line(bottom_left_right, bottom_right_right)
 
     # Create the list of candidates, which are the most right ones and 
     # the intersection points of the bottom line on the right image
@@ -164,8 +164,8 @@ def create_panoramic_view(
     bottom_candidates = [
         bottom_right_right,
         bottom_right_new_middle,
-        __intersection(line_equation_new_middle, right_limit_line_equation),
-        __intersection(line_equation_right, right_limit_line_equation)
+        intersection(line_equation_new_middle, right_limit_line_equation),
+        intersection(line_equation_right, right_limit_line_equation)
     ]
 
     # Now we want to obtain the point with the lowest value of y
@@ -184,8 +184,8 @@ def create_panoramic_view(
 
 
     # Create the line equations
-    line_equation_new_middle = __line(top_left_new_middle, top_right_new_middle)
-    line_equation_right = __line(top_left_right, top_right_right)
+    line_equation_new_middle = line(top_left_new_middle, top_right_new_middle)
+    line_equation_right = line(top_left_right, top_right_right)
 
     # Create the list of candidates, which are the most right ones and
     # the intersection points of the top line on the right image
@@ -194,8 +194,8 @@ def create_panoramic_view(
     top_candidates = [
         top_right_right,
         top_right_new_middle,
-        __intersection(line_equation_new_middle, right_limit_line_equation),
-        __intersection(line_equation_right, right_limit_line_equation)
+        intersection(line_equation_new_middle, right_limit_line_equation),
+        intersection(line_equation_right, right_limit_line_equation)
     ]
 
 
