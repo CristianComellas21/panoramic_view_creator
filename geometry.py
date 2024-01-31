@@ -1,3 +1,7 @@
+"""
+Simple geometry functions to calculate the equation of a line and the intersection point of two lines.
+"""
+
 import numpy as np
 
 def line(point1: np.array, point2: np.array):
