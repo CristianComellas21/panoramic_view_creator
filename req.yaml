@@ -1,0 +1,16 @@
+name: computer-vision-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - matplotlib=3.4.2=py39h06a4308_0
+  - numpy=1.20.3=py39hf144106_0
+  - pandas=1.5.3=py39h417a72b_0
+  - pip=23.2.1=py39h06a4308_0
+  - python=3.9.6=h12debd9_1
+  - scikit-image=0.18.1=py39ha9443f7_0
+  - scikit-learn=1.2.2=py39h6a678d5_0
+  - scipy=1.10.1=py39h14f4228_0
+  - tqdm=4.65.0=py39hb070fc8_0
+  - pip:
+      - opencv-contrib-python==4.5.1.48

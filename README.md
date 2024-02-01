@@ -13,7 +13,7 @@ This project is a Python application that stitches together a set of images to c
 You can run the script `create_panoramic.py` with the following command:
 
 ```bash
-python create_panoramic.py -i <image1> <image2> <image3> -o <output_path> -t <threshold> -m <method> -v -
+python create_panoramic.py [-h] [-o OUTPUT] [-t THRESHOLD] [-m {SIFT,ORB}] [-v] [-c] -i IMAGE_PATHS [IMAGE_PATHS ...]
 
 ```
 

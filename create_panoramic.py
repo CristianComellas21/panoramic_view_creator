@@ -19,7 +19,7 @@ def main():
     # --- Add named arguments
     arg_parser.add_argument("-o", "--output", default="panoramic_result.png", help="Path to the output directory.")
 
-    arg_parser.add_argument("-t", "--threshold", default=0.6, type=float, help="Threshold for the ratio test.")
+    arg_parser.add_argument("-r", "--ratio", default=0.65, type=float, help="Ratio for the correct matches selection.")
     
     arg_parser.add_argument("-m", "--method", choices=["SIFT", "ORB"], default="SIFT", help="Method for feature detection.")
 
@@ -29,8 +29,7 @@ def main():
     arg_parser.add_argument("-c", "--crop", action="store_true", help="Crop the result image.")
 
     # --- Add positional arguments (image paths)
-    arg_parser.add_argument("-i", "--image_paths", nargs="+", type=str, help="Path to the 3 images to be stitched in order left-to-right.")
-
+    arg_parser.add_argument("-i", "--image_paths", required=True, nargs="+", type=str, help="Path to the 3 images to be stitched in order left-to-right.")
 
 
     # Parse the arguments
@@ -38,7 +37,7 @@ def main():
 
     # Extract the arguments
     output_path = args.output
-    match_threshold = args.threshold
+    match_ratio = args.ratio
     image_paths = args.image_paths
     crop = args.crop
     method = args.method
@@ -54,7 +53,7 @@ def main():
     # Create the panoramic view
     _, _, panoramic = create_panoramic_view(
         images=images, 
-        match_threshold=match_threshold,
+        match_ratio=match_ratio,
         crop=crop,
         detector=method,
         verbose=verbose)

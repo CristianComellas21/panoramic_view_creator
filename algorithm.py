@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 from geometry import line, intersection
 
-MIN_GOOD_MATCHES = 10
+MIN_GOOD_MATCHES = 20
 MIN_RATIO = 0.4
 MAX_DESCRIPTORS = 15000
 BASE_DESCRIPTION = "Panoramic view creation"
@@ -16,7 +16,7 @@ DETECTOR_OPTIONS = {
 
 def create_panoramic_view(
         images: [np.ndarray],
-        match_threshold: float = 0.6,
+        match_ratio: float = 0.6,
         crop: bool = False,
         detector: str = "SIFT",
         verbose: bool = True
@@ -36,7 +36,7 @@ def create_panoramic_view(
     # Assertions
     assert len(images) == 3, "The number of images must be 3."
     assert detector in DETECTOR_OPTIONS.keys(), f"Detector must be one of {DETECTOR_OPTIONS.keys()}."
-    assert match_threshold > MIN_RATIO and match_threshold <= 1, "Match threshold must be between 0 and 1."
+    assert match_ratio > MIN_RATIO and match_ratio <= 1, "Match threshold must be between 0 and 1."
     
 
 
@@ -86,8 +86,8 @@ def create_panoramic_view(
     __update_progress(progress_indicator, "Getting good matches...")
 
     # Get the good matches
-    good_matches_left_middle = __filter_matches(matches_left_middle, match_threshold)
-    good_matches_middle_right = __filter_matches(matches_middle_right, match_threshold)
+    good_matches_left_middle = __filter_matches(matches_left_middle, match_ratio)
+    good_matches_middle_right = __filter_matches(matches_middle_right, match_ratio)
 
     
     __update_progress(progress_indicator, "Getting homography matrices...")
@@ -249,6 +249,7 @@ def __filter_matches(
 
     # Check if there are enough good matches
     n_good_matches = len(filtered_matches)
+      
     if n_good_matches < MIN_GOOD_MATCHES:
         raise Exception(f"Not enough good matches. Only {n_good_matches} found and at least {MIN_GOOD_MATCHES} are needed. Please try with a higher match threshold.")
 
