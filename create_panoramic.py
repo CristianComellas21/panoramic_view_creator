@@ -51,7 +51,7 @@ def main():
     images = [__read_image(image_path) for image_path in image_paths]
 
     # Create the panoramic view
-    _, _, panoramic = create_panoramic_view(
+    panoramic = create_panoramic_view(
         images=images, 
         match_ratio=match_ratio,
         crop=crop,

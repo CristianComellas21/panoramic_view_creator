@@ -160,7 +160,7 @@ def create_panoramic_view(
     __update_progress(progress_indicator, "Done!")
 
 
-    return result_left_middle, result_right_middle, final_image
+    return final_image
     
     
     

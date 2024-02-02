@@ -71,11 +71,11 @@ You can also use the `create_panoramic_view` function in your Python code. Here'
 ```python
 from algorithm import create_panoramic_view
 
-# Provide paths to the 3 images
+# Provide paths to the 3 images in order left-to-right
 image_paths = ["image1.jpg", "image2.jpg", "image3.jpg"]
 
 # Call the function
-result_left_middle, result_right_middle, final_image = create_panoramic_view(
+panoramic_image = create_panoramic_view(
     images=image_paths,
     match_ratio=0.65,
     crop=True,
@@ -84,7 +84,7 @@ result_left_middle, result_right_middle, final_image = create_panoramic_view(
 )
 
 # Save the final image
-cv.imwrite("output/panoramic_result.png", final_image)
+cv.imwrite("output/panoramic_result.png", panoramic_image)
 ```
 
 Adjust the parameters as needed.
