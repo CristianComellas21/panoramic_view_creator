@@ -16,7 +16,7 @@ DETECTOR_OPTIONS = {
 
 def create_panoramic_view(
         images: [np.ndarray],
-        match_ratio: float = 0.6,
+        match_ratio: float = 0.65,
         crop: bool = False,
         detector: str = "SIFT",
         verbose: bool = True
