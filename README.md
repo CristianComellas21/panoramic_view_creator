@@ -10,7 +10,7 @@ This project requires Python 3.9.6 and the following Python libraries:
 - pandas=1.5.3
 - numpy=1.20.3
 - tqdm=4.65.0
-- opencv-contrib-python==4.5.1.48
+- opencv-contrib-python=4.5.1.48
 
 
 ## Installation
