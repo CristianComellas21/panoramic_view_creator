@@ -35,8 +35,9 @@ cd panoramic_view_creator
 conda env create -f requirements.yaml -n [DESIRED_ENV_NAME]
 ```
 
-[!NOTE]
-This step can take a few minutes.
+| :exclamation:  This step can take a few minutes. |
+| --------------------------------------------------- |
+
 
 ## Usage
 
