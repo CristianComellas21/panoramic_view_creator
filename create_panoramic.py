@@ -17,7 +17,7 @@ def main():
     arg_parser = ArgumentParser()
 
     # --- Add named arguments
-    arg_parser.add_argument("-o", "--output", default="panoramic_result.png", help="Path to the output directory.")
+    arg_parser.add_argument("-o", "--output", default="output/panoramic_result.png", help="Path to the output directory.")
 
     arg_parser.add_argument("-r", "--ratio", default=0.65, type=float, help="Ratio for the correct matches selection.")
     
