@@ -29,7 +29,7 @@ cd panoramic_view_creator
 
 3. Install miniconda (if not already installed) following the instructions [here](https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html).
 
-4. Install the required dependencies:
+4. Create a new conda environment with the required dependencies:
 
 ```bash
 conda env create -f requirements.yaml -n [DESIRED_ENV_NAME]
