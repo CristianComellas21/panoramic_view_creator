@@ -46,13 +46,13 @@ conda env create -f requirements.yaml -n [DESIRED_ENV_NAME]
 You can run the script `create_panoramic.py` with the following command:
 
 ```bash
-python create_panoramic.py [-h] [-o OUTPUT] [-t THRESHOLD] [-m {'SIFT','ORB'}] [-v] [-c] -i IMAGE_PATHS [IMAGE_PATHS ...]
+python create_panoramic.py [-h] [-o OUTPUT] [-r RATIO] [-m {'SIFT','ORB'}] [-v] [-c] -i IMAGE_PATHS [IMAGE_PATHS ...]
 ```
 
 **Arguments**
 
 - `-i` or `--image_paths`: Paths to the 3 images to be stitched in order left-to-right.
-- `-o` or `--output`: Path to the output directory (default: panoramic_result.png).
+- `-o` or `--output`: Path to the output file. It will create the intermediate directories if they don't exist (default: "output/panoramic_result.png").
 - `-r` or `--ratio`: Ratio for the correct matches selection (default: 0.65).
 - `-m` or `--method`: Method for feature detection (choices: ["SIFT", "ORB"], default: "SIFT").
 - `-v` or `--verbose`: Print verbose output (optional).
