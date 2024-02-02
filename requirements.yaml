@@ -1,0 +1,11 @@
+name: computer-vision-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - matplotlib=3.4.2
+  - pandas=1.5.3
+  - numpy=1.20.3
+  - tqdm=4.65.0
+  - pip:
+      - opencv-contrib-python==4.5.1.48
