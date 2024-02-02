@@ -15,6 +15,8 @@ This project requires Python 3.9.6 and the following Python libraries:
 
 ## Installation
 
+0. Install miniconda (if not already installed) following the instructions [here](https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html).
+
 1. Clone the repository:
 
 ```bash
@@ -27,9 +29,7 @@ git clone https://github.com/CristianComellas21/panoramic_view_creator.git
 cd panoramic_view_creator
 ```
 
-3. Install miniconda (if not already installed) following the instructions [here](https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html).
-
-4. Create a new conda environment with the required dependencies:
+3. Create a new conda environment with the required dependencies:
 
 ```bash
 conda env create -f requirements.yaml -n [DESIRED_ENV_NAME]
