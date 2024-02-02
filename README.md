@@ -20,7 +20,7 @@ python create_panoramic.py [-h] [-o OUTPUT] [-t THRESHOLD] [-m {SIFT,ORB}] [-v] 
 Arguments
 -i or --image_paths: Paths to the 3 images to be stitched in order left-to-right.
 -o or --output: Path to the output directory. Default is panoramic_result.png.
--t or --threshold: Threshold for the ratio test. Default is 0.6.
+-t or --threshold: Threshold for the ratio test. Default is 0.65.
 -m or --method: Method for feature detection. Choices are SIFT and ORB. Default is SIFT.
 -v or --verbose: Print verbose output. This is optional.
 -c or --crop: Crop the result image. This is optional.
