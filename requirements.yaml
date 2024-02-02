@@ -1,7 +1,7 @@
 name: computer-vision-env
 channels:
-  - conda-forge
   - defaults
+  - conda-forge
 dependencies:
   - python=3.9.6
   - matplotlib=3.4.2
